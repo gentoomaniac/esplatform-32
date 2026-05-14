@@ -1,0 +1,47 @@
+CompileFlags:
+  Add:
+    - "-std=c++20"
+    - "-Wno-everything"
+    - "-nostdinc"
+    - "-nostdinc++"
+    
+    # C++ Standard Library (using the paths we verified)
+    - "-I/home/marco/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0"
+    - "-I/home/marco/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0/xtensa-esp32-elf"
+    - "-I/home/marco/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0/backward"
+
+    # C System Paths
+    - "-I/home/marco/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include"
+    - "-I/home/marco/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/sys-include"
+    - "-I/home/marco/.platformio/packages/toolchain-xtensa-esp32/lib/gcc/xtensa-esp32-elf/8.4.0/include"
+    - "-I/home/marco/.platformio/packages/toolchain-xtensa-esp32/lib/gcc/xtensa-esp32-elf/8.4.0/include-fixed"
+    
+    # --- THE TYPE CONFLICT FIXES ---
+    - "-D_SSIZE_T_DECLARED"       # Tells Newlib to stop trying to define _ssize_t
+    - "-Dssize_t=long"
+    - "-D__ssize_t_defined"      # Tells other headers it's already done
+    - "-D_B_SIZE_T"              # Fixes potential size_t overlaps
+
+    # Macros for header compatibility
+    - "-D__esp32__"
+    - "-DESP32"
+    - "-D__GNUC__=8"
+    - "-D__GLIBC_USE(x)=0"
+    - "-D__GNU_VISIBLE=1"
+    - "-D_ANSI_SOURCE"
+
+  # THIS SECTION IS THE KEY: Strip the offending GCC flags
+  Remove:
+    - "-mlongcalls"
+    - "-fstrict-volatile-bitfields"
+    - "-fno-tree-switch-conversion"
+    - "-mfix-esp32-erratum-76"
+    - "-mno-riscv-attribute"
+
+Diagnostics:
+  Suppress:
+    - "c99-designator"
+    - "ovl_no_viable_function_in_call"
+    - "no_member"
+    - "pp_file_not_found"
+    - "unknown_argument" # This specifically suppresses the 'did you mean' warnings

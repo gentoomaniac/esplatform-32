@@ -1,0 +1,11 @@
+{
+    "clangd.arguments": [
+        "--log=verbose",
+        "--pretty",
+        "--background-index",
+        "--compile-commands-dir=${workspaceFolder}",
+        "--fallback-style=none",
+        "--query-driver=/home/marco/.platformio/packages/toolchain-xtensa-esp32*/bin/xtensa-esp32-elf-gcc",
+        "--header-insertion=never"
+    ]
+}

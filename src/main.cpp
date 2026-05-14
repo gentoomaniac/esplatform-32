@@ -50,10 +50,6 @@ httpd_handle_t start_webserver(void) {
     return NULL;
 }
 
-
-// ==========================================
-// 5. MAIN LIFECYCLE
-// ==========================================
 void setup() {
     currentConfig = GetDefaultConfig();
     Serial.begin(115200);
