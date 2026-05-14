@@ -9,7 +9,6 @@
 #define MAX_WIFI_PASSWORD_LEN 32
 #define MAX_IPV4_LEN 16
 
-
 struct Device {
     char name[MAX_DEVICE_NAME_LENGTH];
     char mac[MAC_STR_LEN];
@@ -53,6 +52,5 @@ struct Config {
     Sys sys;
     Wifi wifi;
 };
-
 
 Config* GetDefaultConfig();

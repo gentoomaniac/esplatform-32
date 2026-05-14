@@ -1,10 +1,11 @@
+#include "deviceconfig.h"
+
 #include <Arduino.h>
 
-#include "deviceconfig.h"
 #include "system.h"
 
 Config* GetDefaultConfig() {
-    static Config config; 
+    static Config config;
 
     static bool initialized = false;
 
@@ -16,7 +17,7 @@ Config* GetDefaultConfig() {
 
         config.sys.debug.serialEnabled = true;
         config.sys.debug.baud = 115200;
-        
+
         config.wifi.ap.enabled = true;
         snprintf(config.wifi.ap.ssid, MAX_WIFI_SSID_LEN, "ESP32-%s", config.sys.id);
         strncpy(config.wifi.sta.password, config.sys.id, MAX_WIFI_PASSWORD_LEN);
@@ -25,9 +26,9 @@ Config* GetDefaultConfig() {
         strncpy(config.wifi.sta.ssid, "Metalmania-iot", MAX_WIFI_SSID_LEN);
         strncpy(config.wifi.sta.password, "Eu3cXH4aQX", MAX_WIFI_PASSWORD_LEN);
         config.wifi.sta.dhcp = true;
-        
+
         initialized = true;
     }
-    
+
     return &config;
 }
