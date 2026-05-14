@@ -10,8 +10,8 @@ void esp32_temperature_c(httpd_req_t *req, DeviceConfig *config) {
     snprintf(buffer, sizeof(buffer),
         "# HELP esp32_temperature_c Current temperature\n"
         "# TYPE esp32_temperature_c gauge\n"
-        "esp32_temperature_c{device=\"%s\"} %.2f\n",
-        config->DeviceName, temperatureRead()
+        "esp32_temperature_c{id=\"%s\",name=\"%s\"} %.2f\n",
+        config->Sys.Id, config->Sys.DeviceName, temperatureRead()
     );
     httpd_resp_send_chunk(req, buffer, HTTPD_RESP_USE_STRLEN);
 }
@@ -21,8 +21,8 @@ void esp32_clockspeed(httpd_req_t *req, DeviceConfig *config) {
     snprintf(buffer, sizeof(buffer),
         "# HELP esp32_clockspeed CPU clockspeed\n"
         "# TYPE esp32_clockspeed gauge\n"
-        "esp32_clockspeed{device=\"%s\"} %u\n",
-        config->DeviceName, ESP.getCpuFreqMHz()
+        "esp32_clockspeed{id=\"%s\",name=\"%s\"} %u\n",
+        config->Sys.Id, config->Sys.DeviceName, ESP.getCpuFreqMHz()
     );
     httpd_resp_send_chunk(req, buffer, HTTPD_RESP_USE_STRLEN);
 }
@@ -32,12 +32,12 @@ void esp32_memory_bytes(httpd_req_t *req, DeviceConfig *config) {
     snprintf(buffer, sizeof(buffer),
         "# HELP esp32_memory_bytes Memory usage\n"
         "# TYPE esp32_memory_bytes gauge\n"
-        "esp32_memory_bytes{device=\"%s\",type=\"total\"} %u\n"
-        "esp32_memory_bytes{device=\"%s\",type=\"free\"} %u\n"
-        "esp32_memory_bytes{device=\"%s\",type=\"minfree\"} %u\n",
-        config->DeviceName, ESP.getHeapSize(),
-        config->DeviceName, ESP.getFreeHeap(),
-        config->DeviceName, ESP.getMinFreeHeap()
+        "esp32_memory_bytes{id=\"%s\",name=\"%s\",type=\"total\"} %u\n"
+        "esp32_memory_bytes{id=\"%s\",name=\"%s\",type=\"free\"} %u\n"
+        "esp32_memory_bytes{id=\"%s\",name=\"%s\",type=\"minfree\"} %u\n",
+        config->Sys.Id, config->Sys.DeviceName, ESP.getHeapSize(),
+        config->Sys.Id, config->Sys.DeviceName, ESP.getFreeHeap(),
+        config->Sys.Id, config->Sys.DeviceName, ESP.getMinFreeHeap()
     );
     httpd_resp_send_chunk(req, buffer, HTTPD_RESP_USE_STRLEN);
 }
@@ -47,10 +47,10 @@ void esp32_fs_bytes(httpd_req_t *req, DeviceConfig *config) {
     snprintf(buffer, sizeof(buffer),
         "# HELP esp32_fs_bytes Filesystem stats\n"
         "# TYPE esp32_fs_bytes gauge\n"
-        "esp32_fs_bytes{device=\"%s\",type=\"total\"} %zu\n"
-        "esp32_fs_bytes{device=\"%s\",type=\"used\"} %zu\n",
-        config->DeviceName, LittleFS.totalBytes(),
-        config->DeviceName, LittleFS.usedBytes()
+        "esp32_fs_bytes{id=\"%s\",name=\"%s\",type=\"total\"} %zu\n"
+        "esp32_fs_bytes{id=\"%s\",name=\"%s\",type=\"used\"} %zu\n",
+        config->Sys.Id, config->Sys.DeviceName, LittleFS.totalBytes(),
+        config->Sys.Id, config->Sys.DeviceName, LittleFS.usedBytes()
     );
     httpd_resp_send_chunk(req, buffer, HTTPD_RESP_USE_STRLEN);
 }
@@ -60,8 +60,8 @@ void esp32_wifi_rssi_dbm(httpd_req_t *req, DeviceConfig *config) {
     snprintf(buffer, sizeof(buffer), 
         "# HELP esp32_wifi_rssi_dbm WiFi signal strength\n"
         "# TYPE esp32_wifi_rssi_dbm gauge\n"
-        "esp32_wifi_rssi_dbm{device=\"%s\"} %d\n",
-        config->DeviceName, (int)WiFi.RSSI()
+        "esp32_wifi_rssi_dbm{id=\"%s\",name=\"%s\"} %d\n",
+        config->Sys.Id, config->Sys.DeviceName, (int)WiFi.RSSI()
     );
     httpd_resp_send_chunk(req, buffer, HTTPD_RESP_USE_STRLEN);
 }
@@ -71,8 +71,8 @@ void esp32_uptime_seconds(httpd_req_t *req, DeviceConfig *config) {
     snprintf(buffer, sizeof(buffer),
         "# HELP esp32_uptime_seconds System uptime\n"
         "# TYPE esp32_uptime_seconds counter\n"
-        "esp32_uptime_seconds{device=\"%s\"} %lu\n",
-        config->DeviceName, (unsigned long) millis() / 1000
+        "esp32_uptime_seconds{id=\"%s\",name=\"%s\"} %lu\n",
+        config->Sys.Id, config->Sys.DeviceName, (unsigned long) millis() / 1000
     );
     httpd_resp_send_chunk(req, buffer, HTTPD_RESP_USE_STRLEN);
 }
