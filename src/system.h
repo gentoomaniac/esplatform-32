@@ -8,3 +8,4 @@
 
 const char* getMac();
 void onboardLed();
+const char* getHardwareRevisionString();

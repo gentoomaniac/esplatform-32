@@ -22,6 +22,7 @@ struct Debug {
 
 struct Sys {
     const char* id;
+    bool led;
     Device device;
     Debug debug;
 };
