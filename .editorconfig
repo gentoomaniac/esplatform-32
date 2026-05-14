@@ -1,0 +1,2 @@
+[*{.cpp,.h,.c,.hpp}]
+trim_trailing_whitespace = true

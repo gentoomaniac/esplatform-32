@@ -7,5 +7,8 @@
         "--fallback-style=none",
         "--query-driver=/home/marco/.platformio/packages/toolchain-xtensa-esp32*/bin/xtensa-esp32-elf-gcc",
         "--header-insertion=never"
-    ]
+    ],
+    "editor.formatOnSave": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true
 }
