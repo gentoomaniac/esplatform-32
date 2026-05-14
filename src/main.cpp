@@ -1,7 +1,8 @@
 #include <Arduino.h>
-#include <WiFi.h>
-#include <esp_http_server.h>
 #include <ArduinoJson.h>
+#include <esp_http_server.h>
+#include <LittleFS.h>
+#include <WiFi.h>
 
 #include "deviceconfig.h"
 #include "metrics.h"
@@ -170,6 +171,11 @@ httpd_handle_t start_webserver(void) {
 void setup() {
     currentConfig = GetDefaultConfig();
     Serial.begin(115200);
+
+    if (!LittleFS.begin(true)) {
+        Serial.println("Critical Error: LittleFS mount failed!");
+        return; 
+    }
 
     // Wi-Fi Connection
     Serial.print("Connecting to Wi-Fi ...");
