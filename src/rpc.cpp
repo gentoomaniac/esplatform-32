@@ -6,9 +6,9 @@
 #include "deviceconfig.h"
 
 // Handler for "Config.Get"
-int handleConfigGet(JsonObject params, JsonObject result, DeviceConfig* config) {
-    result["version"] = config->Sys.Version;
-    result["device_name"] = config->Sys.DeviceName;
+int handleConfigGet(JsonObject params, JsonObject result, Config* config) {
+    result["version"] = config->sys.device.fwVersion;
+    result["device_name"] = config->sys.device.name;
     return 0; // 0 means success
 }
 
@@ -18,7 +18,7 @@ const RpcRoute rpcRoutes[] = {
 
 const size_t numRoutes = sizeof(rpcRoutes) / sizeof(rpcRoutes[0]);
 
-esp_err_t rpc_post_handler(httpd_req_t *req, DeviceConfig* config) {
+esp_err_t rpc_post_handler(httpd_req_t *req, Config* config) {
     char buf[1024]; // Max payload size for our RPC calls
     int remaining = req->content_len;
 

@@ -4,4 +4,4 @@
 
 #include "deviceconfig.h"
 
-esp_err_t metrics_get_handler(httpd_req_t *req, DeviceConfig *currentConfig);
+esp_err_t metrics_get_handler(httpd_req_t*, Config*);

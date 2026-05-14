@@ -33,11 +33,11 @@ const char* getHardwareRevisionString() {
     return hardware_rev_buffer;
 }
 
-esp_err_t info_get_handler(httpd_req_t *req, DeviceConfig *config) {
+esp_err_t info_get_handler(httpd_req_t *req, Config *config) {
     JsonDocument doc;
-    doc["id"] = config->Sys.Id;
-    doc["name"] = config->Sys.DeviceName;
-    doc["fw"] = config->Sys.Version;
+    doc["id"] = config->sys.id;
+    doc["name"] = config->sys.device.name;
+    doc["fw"] = config->sys.device.fwVersion;
     doc["hw"]= getHardwareRevisionString();
 
     String jsonOutput;

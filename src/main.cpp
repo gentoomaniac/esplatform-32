@@ -7,19 +7,20 @@
 #include "info.h"
 #include "metrics.h"
 #include "rpc.h"
+#include "system.h"
 
-DeviceConfig* currentConfig;
+Config* config;
 
 esp_err_t rpc_handler(httpd_req_t *req) {
-    return rpc_post_handler(req, currentConfig);
+    return rpc_post_handler(req, config);
 }
 
 esp_err_t metrics_handler(httpd_req_t *req) {
-    return metrics_get_handler(req, currentConfig);
+    return metrics_get_handler(req, config);
 }
 
 esp_err_t info_handler(httpd_req_t *req) {
-    return info_get_handler(req, currentConfig);
+    return info_get_handler(req, config);
 }
 
 httpd_handle_t start_webserver(void) {
@@ -64,52 +65,48 @@ httpd_handle_t start_webserver(void) {
 }
 
 void setup() {
-    currentConfig = GetDefaultConfig();
     Serial.begin(115200);
+    config = GetDefaultConfig();
+    Serial.println("default config loaded");
+
+    if (config->sys.debug.serialEnabled) {
+        Serial.begin(config->sys.debug.baud);
+        Serial.println("Serial console enabled");
+    }
 
     if (!LittleFS.begin(true)) {
         Serial.println("Critical Error: LittleFS mount failed!");
         return; 
     }
 
-    // Wi-Fi Connection
-    Serial.print("Connecting to Wi-Fi ...");
-    WiFi.begin(currentConfig->Wifi.SSID, currentConfig->Wifi.Password);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+    if (config->wifi.ap.enabled && config->wifi.sta.enabled) {
+        WiFi.mode(WIFI_AP_STA);
     }
-    Serial.println("\nConnected! IP Address: ");
-    Serial.println(WiFi.localIP());
+
+    //start WiFi AP
+    if (config->wifi.ap.enabled) {
+        Serial.print("Enabling access point with SSID `"); Serial.print(config->wifi.ap.ssid); Serial.println("` ...");
+        WiFi.softAP(config->wifi.ap.ssid, config->wifi.ap.password);
+        Serial.println("Gateway IP: " + WiFi.softAPIP().toString());
+    }
+
+    // Connect to existing WiFi
+    if (config->wifi.sta.enabled) {
+        Serial.print("Connecting to Wi-Fi "); Serial.print(config->wifi.sta.ssid); Serial.print(" ");
+        WiFi.begin(config->wifi.sta.ssid, config->wifi.sta.password);
+        while (WiFi.status() != WL_CONNECTED) {
+            delay(500);
+            Serial.print(".");
+        }
+        Serial.print("\nConnected!\nIP Address: "); Serial.println(WiFi.localIP());
+    }
+
+    pinMode(LED_BUILTIN, OUTPUT);
 
     // Start the server
     start_webserver();
 }
 
-#ifndef LED_BUILTIN
-#define LED_BUILTIN 2  // 2 is the standard pin for most ESP32 dev boards
-#endif
-
-unsigned long previousLedMillis = 0;
-const long ledInterval = 1000; // Blink interval in milliseconds (1 second)
-bool ledState = false;
-
 void loop() {
-    // Get the current uptime in milliseconds
-    unsigned long currentMillis = millis();
-
-    // Check if it's time to toggle the LED
-    if (currentMillis - previousLedMillis >= ledInterval) {
-        // Save the last time you blinked the LED
-        previousLedMillis = currentMillis;
-
-        // Toggle the state
-        ledState = !ledState;
-
-        // Apply the new state to the physical pin
-        digitalWrite(LED_BUILTIN, ledState);
-    }
-    
-    // Future non-blocking sensor reads will go here!
-    // e.g., if (currentMillis - previousSensorMillis >= 5000) { readDHT(); }
+    onboardLed();
 }

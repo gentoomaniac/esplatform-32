@@ -5,12 +5,12 @@
 
 #include "deviceconfig.h"
 
-typedef int (*RpcHandler)(JsonObject, JsonObject, DeviceConfig*);
+typedef int (*RpcHandler)(JsonObject, JsonObject, Config*);
 
 struct RpcRoute {
     const char* method;
     RpcHandler handler;
 };
 
-esp_err_t rpc_post_handler(httpd_req_t*, DeviceConfig*);
-int handleConfigGet(JsonObject, JsonObject, DeviceConfig*);
+esp_err_t rpc_post_handler(httpd_req_t*, Config*);
+int handleConfigGet(JsonObject, JsonObject, Config*);

@@ -1,20 +1,30 @@
-#include <string.h>
+#include <Arduino.h>
 
 #include "deviceconfig.h"
 #include "system.h"
 
-DeviceConfig* GetDefaultConfig() {
-    static DeviceConfig config; 
+Config* GetDefaultConfig() {
+    static Config config; 
 
     static bool initialized = false;
 
     if (!initialized) {
-        config.Sys.Id = getUniqueDeviceId();
-        strncpy(config.Sys.Version, "1.0.0", MAX_VERSION_LEN);
-        strncpy(config.Sys.DeviceName, "ESP32-test", MAX_FIELD_LENGTH);
+        config.sys.id = getMac();
+
+        strncpy(config.sys.device.fwVersion, "1.0.0", MAX_DEVICE_VERSION_LEN);
+        strncpy(config.sys.device.name, "ESP32-test", MAX_DEVICE_NAME_LENGTH);
+
+        config.sys.debug.serialEnabled = true;
+        config.sys.debug.baud = 115200;
         
-        strncpy(config.Wifi.SSID, "Metalmania-iot", MAX_FIELD_LENGTH);
-        strncpy(config.Wifi.Password, "Eu3cXH4aQX", MAX_FIELD_LENGTH);
+        config.wifi.ap.enabled = true;
+        snprintf(config.wifi.ap.ssid, MAX_WIFI_SSID_LEN, "ESP32-%s", config.sys.id);
+        strncpy(config.wifi.sta.password, config.sys.id, MAX_WIFI_PASSWORD_LEN);
+
+        config.wifi.sta.enabled = true;
+        strncpy(config.wifi.sta.ssid, "Metalmania-iot", MAX_WIFI_SSID_LEN);
+        strncpy(config.wifi.sta.password, "Eu3cXH4aQX", MAX_WIFI_PASSWORD_LEN);
+        config.wifi.sta.dhcp = true;
         
         initialized = true;
     }

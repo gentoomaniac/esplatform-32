@@ -30,6 +30,8 @@ CompileFlags:
     - "-D__GNU_VISIBLE=1"
     - "-D_ANSI_SOURCE"
 
+    - "-Werror=return-type"
+
   # THIS SECTION IS THE KEY: Strip the offending GCC flags
   Remove:
     - "-mlongcalls"
