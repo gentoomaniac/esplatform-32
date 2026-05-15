@@ -11,9 +11,11 @@ Config* GetDefaultConfig() {
 
     if (!initialized) {
         config.sys.id = getMac();
+        config.sys.led = false;
 
-        strncpy(config.sys.device.fwVersion, "1.0.0", MAX_DEVICE_VERSION_LEN);
-        strncpy(config.sys.device.name, "ESP32-test", MAX_DEVICE_NAME_LENGTH);
+        config.sys.auth.enabled = true;
+        strncpy(config.sys.auth.username, "admin", MAX_AUTH_USERNAME_LEN);
+        strncpy(config.sys.auth.password, config.sys.id, MAX_AUTH_PASSWORD_LEN);
 
         config.sys.debug.serialEnabled = true;
         config.sys.debug.baud = 115200;

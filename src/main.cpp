@@ -3,6 +3,7 @@
 #include <WiFi.h>
 #include <esp_http_server.h>
 
+#include "auth.h"
 #include "deviceconfig.h"
 #include "info.h"
 #include "metrics.h"
@@ -12,7 +13,7 @@
 Config* config;
 
 esp_err_t rpc_handler(httpd_req_t* req) {
-    return rpc_post_handler(req, config);
+    return authed(req, config, rpc_post_handler);
 }
 
 esp_err_t metrics_handler(httpd_req_t* req) {

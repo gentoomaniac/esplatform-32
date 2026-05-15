@@ -8,11 +8,13 @@
 #define MAX_WIFI_SSID_LEN 32
 #define MAX_WIFI_PASSWORD_LEN 32
 #define MAX_IPV4_LEN 16
+#define MAX_AUTH_USERNAME_LEN 16
+#define MAX_AUTH_PASSWORD_LEN 32
 
-struct Device {
-    char name[MAX_DEVICE_NAME_LENGTH];
-    char mac[MAC_STR_LEN];
-    char fwVersion[MAX_DEVICE_VERSION_LEN];
+struct Auth {
+    bool enabled;
+    char username[MAX_AUTH_USERNAME_LEN];
+    char password[MAX_AUTH_PASSWORD_LEN];
 };
 
 struct Debug {
@@ -20,11 +22,18 @@ struct Debug {
     int baud;
 };
 
+struct Device {
+    char name[MAX_DEVICE_NAME_LENGTH];
+    char mac[MAC_STR_LEN];
+    char fwVersion[MAX_DEVICE_VERSION_LEN];
+};
+
 struct Sys {
     const char* id;
     bool led;
-    Device device;
+    Auth auth;
     Debug debug;
+    Device device;
 };
 
 struct Accespoint {
