@@ -8,8 +8,6 @@
 #include "deviceconfig.h"
 #include "mbedtls/sha256.h"
 
-#define DEBUG
-
 // 5 minutes = 300,000ms
 const uint32_t MAX_NONCE_AGE = 300000;
 

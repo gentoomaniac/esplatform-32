@@ -127,7 +127,7 @@ func SendRequest(ip netip.Addr, rpcMethod RPCMethod, params any, auth *Auth) (js
 	}
 
 	if finalResp.Error != nil {
-		return nil, fmt.Errorf("shelly api error: %v", finalResp.Error)
+		return nil, fmt.Errorf("api error: %v", finalResp.Error)
 	}
 
 	return finalResp.Result, nil

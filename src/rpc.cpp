@@ -5,17 +5,23 @@
 
 #include "deviceconfig.h"
 
+#define DEBUG
+
 const size_t MAX_PAYLOAD_SIZE = 1024;
 const char* JSON_RPC_VERSION = "2.0";
 
-// Handler for "Config.Get"
 int handleConfigGet(JsonObject params, JsonObject result, Config* config) {
     serializeConfig(*config, result);
-    return 0;  // 0 means success
+    return 0;
 }
 
 int handleConfigSet(JsonObject params, JsonObject result, Config* config) {
-    return 0;  // 0 means success
+    if (params["config"].is<JsonObjectConst>()) {
+        deserializeConfig(*config, params["config"]);
+        return 0;
+    }
+
+    return 400;
 }
 
 const RpcRoute rpcRoutes[] = {
@@ -49,6 +55,10 @@ esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
     }
     buf[received] = '\0';
 
+#ifdef DEBUG
+    Serial.println(buf);
+#endif
+
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, buf);
 
@@ -60,13 +70,30 @@ esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
         return ESP_OK;
     }
 
+#ifdef DEBUG
+    Serial.println(doc["params"].as<const char*>());
+#endif
+
     const char* method = doc["method"];
     int id = doc["id"] | 0;
-    JsonObject params = doc["params"];
 
     JsonDocument responseDoc;
     responseDoc["jsonrpc"] = JSON_RPC_VERSION;
     responseDoc["id"] = id;
+
+    JsonDocument params;
+    if (doc["params"].is<const char*>()) {
+        error = deserializeJson(params, doc["params"].as<const char*>());
+    } else {
+        params.set(doc["params"]);
+    }
+    if (error) {
+        const char* errResp =
+            "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error of params field\"},\"id\":null}";
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_send(req, errResp, strlen(errResp));
+        return ESP_OK;
+    }
     JsonObject resultObj = responseDoc["result"].to<JsonObject>();
 
     // Dispatch
@@ -74,7 +101,7 @@ esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
     for (size_t i = 0; i < numRoutes; i++) {
         if (strcmp(rpcRoutes[i].method, method) == 0) {
             methodFound = true;
-            int errCode = rpcRoutes[i].handler(params, resultObj, config);
+            int errCode = rpcRoutes[i].handler(params.as<JsonObject>(), resultObj, config);
 
             if (errCode != 0) {
                 responseDoc.remove("result");
