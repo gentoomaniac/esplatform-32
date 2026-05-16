@@ -27,7 +27,7 @@ var cli struct {
 
 	Address netip.Addr `short:"a" help:"target address of the device" required:""`
 	Rpc     string     `short:"r" help:"rpc method to call" required:""`
-	Data    string     `short:"d" help:"data to be sent in json"`
+	Data    string     `short:"d" help:"data to be sent in json" default:"{}"`
 
 	User     string `short:"u" help:"authentication username" default:"admin"`
 	Password string `short:"p" help:"authentication password"`

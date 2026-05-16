@@ -21,12 +21,23 @@ int handleConfigSet(JsonObject params, JsonObject result, Config* config) {
         return 0;
     }
 
-    return 400;
+    return 0;
+}
+
+int handleSystemReboot(JsonObject params, JsonObject result, Config* config) {
+    xTaskCreate(
+        [](void* pd) {
+            vTaskDelay(pdMS_TO_TICKS(500));
+            esp_restart();
+        },
+        "reboot_task", 2048, NULL, 1, NULL);
+    return 0;
 }
 
 const RpcRoute rpcRoutes[] = {
     {"Config.Get", handleConfigGet},
     {"Config.Set", handleConfigSet},
+    {"System.Reboot", handleSystemReboot},
 };
 
 const size_t numRoutes = sizeof(rpcRoutes) / sizeof(rpcRoutes[0]);
