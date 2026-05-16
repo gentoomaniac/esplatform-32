@@ -5,19 +5,28 @@
 
 #include "deviceconfig.h"
 
+const size_t MAX_PAYLOAD_SIZE = 1024;
+const char* JSON_RPC_VERSION = "2.0";
+
 // Handler for "Config.Get"
 int handleConfigGet(JsonObject params, JsonObject result, Config* config) {
-    result["version"] = config->sys.device.fwVersion;
-    result["device_name"] = config->sys.device.name;
+    serializeConfig(*config, result);
     return 0;  // 0 means success
 }
 
-const RpcRoute rpcRoutes[] = {{"Config.Get", handleConfigGet}};
+int handleConfigSet(JsonObject params, JsonObject result, Config* config) {
+    return 0;  // 0 means success
+}
+
+const RpcRoute rpcRoutes[] = {
+    {"Config.Get", handleConfigGet},
+    {"Config.Set", handleConfigSet},
+};
 
 const size_t numRoutes = sizeof(rpcRoutes) / sizeof(rpcRoutes[0]);
 
 esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
-    char buf[1024];  // Max payload size for our RPC calls
+    char buf[MAX_PAYLOAD_SIZE];
     int remaining = req->content_len;
 
     // Reject payloads that are too large
@@ -26,7 +35,6 @@ esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
         return ESP_FAIL;
     }
 
-    // Read the body into our buffer safely
     int received = 0;
     while (remaining > 0) {
         int ret = httpd_req_recv(req, buf + received, remaining);
@@ -39,9 +47,8 @@ esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
         received += ret;
         remaining -= ret;
     }
-    buf[received] = '\0';  // Null-terminate the string
+    buf[received] = '\0';
 
-    // Parse JSON
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, buf);
 
@@ -57,9 +64,8 @@ esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
     int id = doc["id"] | 0;
     JsonObject params = doc["params"];
 
-    // Prepare response JSON
     JsonDocument responseDoc;
-    responseDoc["jsonrpc"] = "2.0";
+    responseDoc["jsonrpc"] = JSON_RPC_VERSION;
     responseDoc["id"] = id;
     JsonObject resultObj = responseDoc["result"].to<JsonObject>();
 
@@ -87,7 +93,6 @@ esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
         errorObj["message"] = "Method not found";
     }
 
-    // Serialize and send
     String responseStr;
     serializeJson(responseDoc, responseStr);
 

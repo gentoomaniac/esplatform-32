@@ -100,7 +100,7 @@ void calc_sha256(const char* input, char* output_hex) {
 
 /**
  * Validates the Authorization header using a stateless signed nonce.
- * * @param auth    The struct containing parsed fields from the Authorization header.
+ * @param auth    The struct containing parsed fields from the Authorization header.
  * @param config  The system configuration (contains credentials and internal secret).
  * @param method  The HTTP method string (e.g., "POST" or "GET").
  * @return true if the nonce is authentic/fresh and the digest matches.

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ArduinoJson.h>
+
 #include "system.h"
 
 #define MAX_FIELD_LENGTH 64
@@ -43,15 +45,15 @@ struct Sys {
 };
 
 struct Accespoint {
+    bool enabled;
     char ssid[MAX_WIFI_SSID_LEN];
     char password[MAX_WIFI_PASSWORD_LEN];
-    bool enabled;
 };
 
 struct Station {
+    bool enabled;
     char ssid[MAX_WIFI_SSID_LEN];
     char password[MAX_WIFI_PASSWORD_LEN];
-    bool enabled;
     bool dhcp;
     char ip[MAX_IPV4_LEN];
     char netmask[MAX_IPV4_LEN];
@@ -70,3 +72,13 @@ struct Config {
 };
 
 Config* GetDefaultConfig();
+void serializeAuth(const Auth&, JsonObject);
+void deserializeAuth(Auth&, JsonObjectConst);
+void serializeDebug(const Debug&, JsonObject);
+void deserializeDebug(Debug&, JsonObjectConst);
+void serializeDevice(const Device&, JsonObject);
+void deserializeDevice(Device&, JsonObjectConst);
+void serializeSys(const Sys&, JsonObject);
+void deserializeSys(Sys&, JsonObjectConst);
+void serializeConfig(const Config&, JsonObject);
+void deserializeConfig(Config&, JsonObjectConst);
