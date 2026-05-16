@@ -91,7 +91,7 @@ esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
     String responseStr;
     serializeJson(responseDoc, responseStr);
 
-    httpd_resp_set_type(req, "application/json");
+    httpd_resp_set_type(req, HTTPD_TYPE_JSON);
     httpd_resp_send(req, responseStr.c_str(), responseStr.length());
 
     return ESP_OK;

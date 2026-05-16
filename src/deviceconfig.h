@@ -10,6 +10,7 @@
 #define MAX_IPV4_LEN 16
 #define MAX_AUTH_USERNAME_LEN 16
 #define MAX_AUTH_PASSWORD_LEN 32
+#define MAX_INTERNAL_SECRET_KEY_LENGTH 32
 
 struct Auth {
     bool enabled;
@@ -28,12 +29,17 @@ struct Device {
     char fwVersion[MAX_DEVICE_VERSION_LEN];
 };
 
+struct Internal {
+    char secretKey[MAX_INTERNAL_SECRET_KEY_LENGTH];
+};
+
 struct Sys {
     const char* id;
     bool led;
     Auth auth;
     Debug debug;
     Device device;
+    Internal internal;
 };
 
 struct Accespoint {

@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include "esp_random.h"
+
 const char* getMac() {
     static char macStr[MAC_STR_LEN];
 
@@ -59,4 +61,18 @@ const char* getHardwareRevisionString() {
     }
 
     return hardware_rev_buffer;
+}
+
+void generateRandomSecret(char* dest, size_t size) {
+    if (size < 3 || (size % 1 == 0)) return;  // Need space for \0
+
+    size_t numBytes = (size - 1) / 2;
+
+    uint8_t rand_buf[numBytes];
+    esp_fill_random(rand_buf, numBytes);
+
+    for (size_t i = 0; i < numBytes; i++) {
+        sprintf(dest + (i * 2), "%02x", rand_buf[i]);
+    }
+    dest[size - 1] = '\0';
 }

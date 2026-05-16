@@ -17,8 +17,13 @@ Config* GetDefaultConfig() {
         strncpy(config.sys.auth.username, "admin", MAX_AUTH_USERNAME_LEN);
         strncpy(config.sys.auth.password, config.sys.id, MAX_AUTH_PASSWORD_LEN);
 
+        snprintf(config.sys.device.name, MAX_DEVICE_NAME_LENGTH, "ESP32-%s", config.sys.id);
+        strncpy(config.sys.device.fwVersion, "qwerty13", MAX_DEVICE_VERSION_LEN);
+
         config.sys.debug.serialEnabled = true;
         config.sys.debug.baud = 115200;
+
+        generateRandomSecret(config.sys.internal.secretKey, sizeof(config.sys.internal.secretKey));
 
         config.wifi.ap.enabled = true;
         snprintf(config.wifi.ap.ssid, MAX_WIFI_SSID_LEN, "ESP32-%s", config.sys.id);

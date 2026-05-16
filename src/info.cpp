@@ -11,11 +11,13 @@ esp_err_t info_get_handler(httpd_req_t* req, Config* config) {
     doc["name"] = config->sys.device.name;
     doc["fw"] = config->sys.device.fwVersion;
     doc["hw"] = getHardwareRevisionString();
+    doc["auth"] = config->sys.auth.enabled ? "true" : "false";
+    doc["auth_domain"] = config->sys.id;
 
     String jsonOutput;
     serializeJson(doc, jsonOutput);
 
-    httpd_resp_set_type(req, "application/json");
+    httpd_resp_set_type(req, HTTPD_TYPE_JSON);
     httpd_resp_send(req, jsonOutput.c_str(), jsonOutput.length());
     return ESP_OK;
 }
