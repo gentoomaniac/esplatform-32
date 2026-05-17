@@ -10,26 +10,26 @@
 #include "rpc.h"
 #include "system.h"
 
-Config* config;
+static Config config;
 
 esp_err_t rpc_handler(httpd_req_t* req) {
-    return authed(req, config, rpc_post_handler);
+    return authed(req, &config, rpc_post_handler);
 }
 
 esp_err_t metrics_handler(httpd_req_t* req) {
-    return metrics_get_handler(req, config);
+    return metrics_get_handler(req, &config);
 }
 
 esp_err_t info_handler(httpd_req_t* req) {
-    return info_get_handler(req, config);
+    return info_get_handler(req, &config);
 }
 
 httpd_handle_t start_webserver(void) {
     httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-
-    // Increase URI match length if you have long endpoints later
-    config.max_uri_handlers = 8;
+    config.stack_size = 8192;
+    config.lru_purge_enable = true;
+    config.max_uri_handlers = 4;
 
     httpd_uri_t info_uri = {.uri = "/info", .method = HTTP_GET, .handler = info_handler, .user_ctx = NULL};
 
@@ -51,38 +51,37 @@ httpd_handle_t start_webserver(void) {
 
 void setup() {
     Serial.begin(115200);
-    config = GetDefaultConfig();
-    Serial.println("default config loaded");
-
-    if (config->sys.debug.serialEnabled) {
-        Serial.begin(config->sys.debug.baud);
-        Serial.println("Serial console enabled");
-    }
-
     if (!LittleFS.begin(true)) {
         Serial.println("Critical Error: LittleFS mount failed!");
         return;
     }
 
-    if (config->wifi.ap.enabled && config->wifi.sta.enabled) {
+    loadConfig(&config);
+
+    if (config.sys.debug.serialEnabled) {
+        Serial.begin(config.sys.debug.baud);
+        Serial.println("Serial console enabled");
+    }
+
+    if (config.wifi.ap.enabled && config.wifi.sta.enabled) {
         WiFi.mode(WIFI_AP_STA);
     }
 
     // start WiFi AP
-    if (config->wifi.ap.enabled) {
+    if (config.wifi.ap.enabled) {
         Serial.print("Enabling access point with SSID `");
-        Serial.print(config->wifi.ap.ssid);
+        Serial.print(config.wifi.ap.ssid);
         Serial.println("` ...");
-        WiFi.softAP(config->wifi.ap.ssid, config->wifi.ap.password);
+        WiFi.softAP(config.wifi.ap.ssid, config.wifi.ap.password);
         Serial.println("Gateway IP: " + WiFi.softAPIP().toString());
     }
 
     // Connect to existing WiFi
-    if (config->wifi.sta.enabled) {
+    if (config.wifi.sta.enabled) {
         Serial.print("Connecting to Wi-Fi ");
-        Serial.print(config->wifi.sta.ssid);
+        Serial.print(config.wifi.sta.ssid);
         Serial.print(" ");
-        WiFi.begin(config->wifi.sta.ssid, config->wifi.sta.password);
+        WiFi.begin(config.wifi.sta.ssid, config.wifi.sta.password);
         while (WiFi.status() != WL_CONNECTED) {
             delay(500);
             Serial.print(".");
@@ -98,7 +97,7 @@ void setup() {
 }
 
 void loop() {
-    if (config->sys.led) {
+    if (config.sys.led) {
         onboardLed();
     }
 }

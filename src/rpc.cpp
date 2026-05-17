@@ -17,11 +17,16 @@ int handleConfigGet(JsonObject params, JsonObject result, Config* config) {
 
 int handleConfigSet(JsonObject params, JsonObject result, Config* config) {
     if (params["config"].is<JsonObjectConst>()) {
+        Serial.println("updating live config ...");
         deserializeConfig(*config, params["config"]);
+
+        Serial.println("persisting config change ...");
+        saveConfig(config);
+        Serial.println("config written");
         return 0;
     }
 
-    return 0;
+    return 400;
 }
 
 int handleSystemReboot(JsonObject params, JsonObject result, Config* config) {

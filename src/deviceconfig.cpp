@@ -2,46 +2,42 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <LittleFS.h>
 
 #include "system.h"
 
 const char* FW_VERSION = "v0.0.0-alpha";
+const char* CONFIG_FILE_PATH = "/config.json";
 
-Config* GetDefaultConfig() {
-    static Config config;
-
+void getDefaultConfig(Config* config) {
     static bool initialized = false;
 
-    if (!initialized) {
-        config.sys.id = getMac();
-        config.sys.led = false;
+    config->sys.id = getMac();
+    config->sys.led = false;
 
-        config.sys.auth.enabled = true;
-        strncpy(config.sys.auth.username, "admin", MAX_AUTH_USERNAME_LEN);
-        strncpy(config.sys.auth.password, config.sys.id, MAX_AUTH_PASSWORD_LEN);
+    config->sys.auth.enabled = true;
+    strncpy(config->sys.auth.username, "admin", MAX_AUTH_USERNAME_LEN);
+    strncpy(config->sys.auth.password, config->sys.id, MAX_AUTH_PASSWORD_LEN);
 
-        snprintf(config.sys.device.name, MAX_DEVICE_NAME_LENGTH, "ESP32-%s", config.sys.id);
-        strncpy(config.sys.device.mac, getMac(), MAC_STR_LEN);
-        strncpy(config.sys.device.fwVersion, FW_VERSION, MAX_DEVICE_VERSION_LEN);
+    snprintf(config->sys.device.name, MAX_DEVICE_NAME_LENGTH, "ESP32-%s", config->sys.id);
+    strncpy(config->sys.device.mac, getMac(), MAC_STR_LEN);
+    strncpy(config->sys.device.fwVersion, FW_VERSION, MAX_DEVICE_VERSION_LEN);
 
-        config.sys.debug.serialEnabled = true;
-        config.sys.debug.baud = 115200;
+    config->sys.debug.serialEnabled = true;
+    config->sys.debug.baud = 115200;
 
-        generateRandomSecret(config.sys.internal.secretKey, sizeof(config.sys.internal.secretKey));
+    generateRandomSecret(config->sys.internal.secretKey, sizeof(config->sys.internal.secretKey));
 
-        config.wifi.ap.enabled = true;
-        snprintf(config.wifi.ap.ssid, MAX_WIFI_SSID_LEN, "ESP32-%s", config.sys.id);
-        strncpy(config.wifi.sta.password, config.sys.id, MAX_WIFI_PASSWORD_LEN);
+    config->wifi.ap.enabled = true;
+    snprintf(config->wifi.ap.ssid, MAX_WIFI_SSID_LEN, "ESP32-%s", config->sys.id);
+    strncpy(config->wifi.sta.password, config->sys.id, MAX_WIFI_PASSWORD_LEN);
 
-        config.wifi.sta.enabled = true;
-        strncpy(config.wifi.sta.ssid, "Metalmania-iot", MAX_WIFI_SSID_LEN);
-        strncpy(config.wifi.sta.password, "Eu3cXH4aQX", MAX_WIFI_PASSWORD_LEN);
-        config.wifi.sta.dhcp = true;
+    config->wifi.sta.enabled = true;
+    strncpy(config->wifi.sta.ssid, "Metalmania-iot", MAX_WIFI_SSID_LEN);
+    strncpy(config->wifi.sta.password, "Eu3cXH4aQX", MAX_WIFI_PASSWORD_LEN);
+    config->wifi.sta.dhcp = true;
 
-        initialized = true;
-    }
-
-    return &config;
+    initialized = true;
 }
 
 void serializeAuth(const Auth& auth, JsonObject obj) {
@@ -179,5 +175,57 @@ void deserializeConfig(Config& config, JsonObjectConst obj) {
     }
     if (obj["wifi"].is<JsonObjectConst>()) {
         deserializeWifi(config.wifi, obj["wifi"]);
+    }
+}
+
+int loadConfig(Config* config) {
+    Serial.println("Loading config defaults ...");
+    getDefaultConfig(config);
+
+    if (LittleFS.exists(CONFIG_FILE_PATH)) {
+        Serial.println("config found, loading and updating life config ...");
+
+        File file = LittleFS.open(CONFIG_FILE_PATH, "r");
+        if (!file) {
+            Serial.println("Failed to open file for reading");
+            return 1;
+        }
+
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, file);
+        file.close();
+
+        deserializeConfig(*config, doc.as<JsonObjectConst>());
+    }
+
+    return 0;
+}
+
+int saveConfig(Config* config) {
+    if (config == nullptr) return 1;
+
+    JsonDocument* doc = new JsonDocument();
+    JsonObject root = doc->to<JsonObject>();
+
+    serializeConfig(*config, root);
+
+    File file = LittleFS.open(CONFIG_FILE_PATH, FILE_WRITE);
+    if (!file) {
+        Serial.println("Failed to open file for writing");
+        delete doc;
+        return 1;
+    }
+
+    size_t bytesWritten = serializeJson(*doc, file);
+    file.close();
+
+    delete doc;
+
+    if (bytesWritten > 0) {
+        Serial.println("Config saved successfully");
+        return 0;
+    } else {
+        Serial.println("Write failed: 0 bytes written");
+        return 1;
     }
 }

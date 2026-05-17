@@ -71,7 +71,7 @@ struct Config {
     Wifi wifi;
 };
 
-Config* GetDefaultConfig();
+void getDefaultConfig(Config*);
 void serializeAuth(const Auth&, JsonObject);
 void deserializeAuth(Auth&, JsonObjectConst);
 void serializeDebug(const Debug&, JsonObject);
@@ -82,3 +82,5 @@ void serializeSys(const Sys&, JsonObject);
 void deserializeSys(Sys&, JsonObjectConst);
 void serializeConfig(const Config&, JsonObject);
 void deserializeConfig(Config&, JsonObjectConst);
+int loadConfig(Config*);
+int saveConfig(Config*);
