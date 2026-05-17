@@ -105,10 +105,6 @@ esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
         return ESP_OK;
     }
 
-#ifdef DEBUG
-    Serial.println(doc["params"].as<const char*>());
-#endif
-
     const char* method = doc["method"];
     int id = doc["id"] | 0;
 
