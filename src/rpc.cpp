@@ -34,8 +34,26 @@ int handleSystemReboot(JsonObject params, JsonObject result, Config* config) {
         [](void* pd) {
             vTaskDelay(pdMS_TO_TICKS(500));
             esp_restart();
+            vTaskDelete(NULL);
         },
         "reboot_task", 2048, NULL, 1, NULL);
+    return 0;
+}
+
+int handleSystemReset(JsonObject params, JsonObject result, Config* config) {
+    xTaskCreate(
+        [](void* pd) {
+            vTaskDelay(pdMS_TO_TICKS(500));
+            Serial.println("Resetting config...");
+            resetConfig();
+
+            Serial.println("Rebooting...");
+            vTaskDelay(pdMS_TO_TICKS(100));
+            esp_restart();
+
+            vTaskDelete(NULL);
+        },
+        "reset_task", 4096, NULL, 1, NULL);
     return 0;
 }
 
@@ -43,6 +61,7 @@ const RpcRoute rpcRoutes[] = {
     {"Config.Get", handleConfigGet},
     {"Config.Set", handleConfigSet},
     {"System.Reboot", handleSystemReboot},
+    {"System.Reset", handleSystemReset},
 };
 
 const size_t numRoutes = sizeof(rpcRoutes) / sizeof(rpcRoutes[0]);

@@ -84,3 +84,4 @@ void serializeConfig(const Config&, JsonObject);
 void deserializeConfig(Config&, JsonObjectConst);
 int loadConfig(Config*);
 int saveConfig(Config*);
+int resetConfig();

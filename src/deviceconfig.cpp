@@ -229,3 +229,10 @@ int saveConfig(Config* config) {
         return 1;
     }
 }
+
+int resetConfig() {
+    if (LittleFS.exists(CONFIG_FILE_PATH)) {
+        LittleFS.remove(CONFIG_FILE_PATH);
+    }
+    return 0;
+}
