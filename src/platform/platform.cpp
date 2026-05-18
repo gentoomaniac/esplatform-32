@@ -10,10 +10,12 @@
 #include "info.h"
 #include "metrics.h"
 #include "rpc.h"
+#include "system.h"
 
-static Config config;
+static const int RESET_BUTTON_PRESS_SECONDS = 10;
 
 ESPlatform32 esPlatform32;
+static Config config;
 
 esp_err_t rpc_handler(httpd_req_t* req) {
     return authed(req, &config, rpc_post_handler);
@@ -52,6 +54,45 @@ httpd_handle_t start_webserver(void) {
     return NULL;
 }
 
+void resetSystem() {
+    xTaskCreate(
+        [](void* pd) {
+            vTaskDelay(pdMS_TO_TICKS(500));
+            Serial.println("Resetting config...");
+            resetConfig();
+
+            Serial.println("Rebooting...");
+            vTaskDelay(pdMS_TO_TICKS(100));
+            esp_restart();
+
+            vTaskDelete(NULL);
+        },
+        "reset_task", 4096, NULL, 1, NULL);
+}
+
+void waitForSystemReset(void* pvParameters) {
+    uint8_t button_pin = (uint8_t)(uintptr_t)pvParameters;
+    while (true) {
+        if (!digitalRead(button_pin)) {
+            unsigned long start = millis();
+            Serial.println("button pressed ...");
+
+            while (millis() - start < RESET_BUTTON_PRESS_SECONDS * 1000) {
+                if (digitalRead(button_pin)) {
+                    Serial.println("reset button released");
+                    return;
+                }
+                Serial.print(".");
+                delay(100);
+            }
+            Serial.printf("\nresetting ...\n");
+            resetSystem();
+        }
+
+        delay(100);
+    }
+}
+
 void ESPlatform32::taskWrapper(void* pvParameters) {
     ESPlatform32* app = (ESPlatform32*)pvParameters;
     app->run();
@@ -59,13 +100,24 @@ void ESPlatform32::taskWrapper(void* pvParameters) {
 
 void ESPlatform32::run() {
     while (true) {
-        // Your application logic here
+        if (config.sys.led) {
+            onboardLed(this->ledPin);
+        }
+
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
-void ESPlatform32::begin() {
+void ESPlatform32::begin(uint8_t led_pin, uint8_t button_pin) {
+    this->ledPin = ledPin;
+    this->buttonPin = buttonPin;
+
     Serial.begin(115200);
+    xTaskCreatePinnedToCore(waitForSystemReset, "ESPlatform32_reset_watchdog", 4096, (void*)(uintptr_t)this->buttonPin,
+                            1, NULL,
+                            0  // Run on Core 0 (Main loop usually runs on Core 1)
+    );
+
     if (!LittleFS.begin(true)) {
         Serial.println("Critical Error: LittleFS mount failed!");
         return;
@@ -106,14 +158,14 @@ void ESPlatform32::begin() {
         Serial.println(WiFi.localIP());
     }
 
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(led_pin, OUTPUT);
 
     if (WiFi.localIP() || WiFi.softAPIP()) {
         delay(100);
         start_webserver();
     } else {
         while (true) {
-            digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+            digitalWrite(led_pin, !digitalRead(led_pin));
             delay(100);
         }
     }

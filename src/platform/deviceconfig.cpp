@@ -13,7 +13,7 @@ void getDefaultConfig(Config* config) {
     static bool initialized = false;
 
     config->sys.id = getMac();
-    config->sys.led = false;
+    config->sys.led = true;
 
     config->sys.auth.enabled = true;
     strncpy(config->sys.auth.username, "admin", MAX_AUTH_USERNAME_LEN);
@@ -199,6 +199,7 @@ int loadConfig(Config* config) {
 }
 
 int saveConfig(Config* config) {
+    Serial.print("saving config ... ");
     if (config == nullptr) return 1;
 
     JsonDocument* doc = new JsonDocument();
@@ -225,11 +226,16 @@ int saveConfig(Config* config) {
         Serial.println("Write failed: 0 bytes written");
         return 1;
     }
+    Serial.println("done!");
 }
 
 int resetConfig() {
+    Serial.print("deleting config ... ");
     if (LittleFS.exists(CONFIG_FILE_PATH)) {
         LittleFS.remove(CONFIG_FILE_PATH);
+        Serial.println("done!");
     }
+
+    Serial.println("nothing to delete");
     return 0;
 }

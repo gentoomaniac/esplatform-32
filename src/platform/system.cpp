@@ -19,13 +19,13 @@ unsigned long previousLedMillis = 0;
 const long ledInterval = 1000;
 bool ledState = false;
 
-void onboardLed() {
+void onboardLed(uint8_t led_builtin) {
     unsigned long currentMillis = millis();
 
     if (currentMillis - previousLedMillis >= ledInterval) {
         previousLedMillis = currentMillis;
         ledState = !ledState;
-        digitalWrite(LED_BUILTIN, ledState);
+        digitalWrite(led_builtin, ledState);
     }
 }
 

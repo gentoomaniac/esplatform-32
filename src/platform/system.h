@@ -2,13 +2,11 @@
 
 #include <stddef.h>
 
+#include "Arduino.h"
+
 #define MAC_STR_LEN 13
 
-#ifndef LED_BUILTIN
-#define LED_BUILTIN A12
-#endif
-
 const char* getMac();
-void onboardLed();
+void onboardLed(uint8_t);
 const char* getHardwareRevisionString();
 void generateRandomSecret(char*, size_t);
