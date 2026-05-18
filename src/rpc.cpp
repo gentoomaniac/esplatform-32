@@ -57,11 +57,31 @@ int handleSystemReset(JsonObject params, JsonObject result, Config* config) {
     return 0;
 }
 
+int handleIoGetPins(JsonObject params, JsonObject result, Config* config) {
+    char pin[3];
+
+    for (int i = 0; i < 40; i++) {
+        // Skip pins that don't exist on standard ESP32 to avoid crashes/garbage
+        if ((i >= 20 && i <= 24) || (i >= 28 && i <= 31)) continue;
+
+        int level = digitalRead(i);
+
+        // Using ESP-IDF internal macros to check direction
+        // 0 = Input, 1 = Output
+        uint32_t is_output = (GPIO_REG_READ(GPIO_ENABLE_REG) >> i) & BIT(0);
+
+        snprintf(pin, 3, "%02d", i);
+        JsonObject pinObj = result[pin].to<JsonObject>();
+        pinObj["mode"] = is_output ? "OUT" : "IN";
+        pinObj["state"] = level ? 1 : 0;
+    }
+
+    return 0;
+}
+
 const RpcRoute rpcRoutes[] = {
-    {"Config.Get", handleConfigGet},
-    {"Config.Set", handleConfigSet},
-    {"System.Reboot", handleSystemReboot},
-    {"System.Reset", handleSystemReset},
+    {"Config.Get", handleConfigGet},     {"Config.Set", handleConfigSet}, {"System.Reboot", handleSystemReboot},
+    {"System.Reset", handleSystemReset}, {"IO.GetPins", handleIoGetPins},
 };
 
 const size_t numRoutes = sizeof(rpcRoutes) / sizeof(rpcRoutes[0]);

@@ -7,8 +7,6 @@
 #include <esp_system.h>
 #include <soc/soc_caps.h>
 
-// For newer ESP-IDF/Arduino versions, use this header for flash mapping if needed:
-#include "esp_partition.h"
 #include "system.h"
 
 typedef struct {
