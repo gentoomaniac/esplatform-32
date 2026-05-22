@@ -12,5 +12,5 @@ struct RpcRoute {
     RpcHandler handler;
 };
 
-esp_err_t rpc_post_handler(httpd_req_t*, Config*);
+esp_err_t rpc_handler(httpd_req_t*);
 int handleConfigGet(JsonObject, JsonObject, Config*);

@@ -86,7 +86,9 @@ const RpcRoute rpcRoutes[] = {
 
 const size_t numRoutes = sizeof(rpcRoutes) / sizeof(rpcRoutes[0]);
 
-esp_err_t rpc_post_handler(httpd_req_t* req, Config* config) {
+esp_err_t rpc_handler(httpd_req_t* req) {
+    Config* config = (Config*)req->user_ctx;
+
     char buf[MAX_PAYLOAD_SIZE];
     int remaining = req->content_len;
 

@@ -7,6 +7,7 @@
 #include <esp_system.h>
 #include <soc/soc_caps.h>
 
+#include "deviceconfig.h"
 #include "system.h"
 
 typedef struct {
@@ -170,7 +171,9 @@ void get_detailed_info(DeviceProfile* p) {
 #endif
 }
 
-esp_err_t info_get_handler(httpd_req_t* req, Config* config) {
+esp_err_t info_handler(httpd_req_t* req) {
+    Config* config = (Config*)req->user_ctx;
+
     JsonDocument doc;
     doc["id"] = config->sys.id;
     doc["name"] = config->sys.device.name;

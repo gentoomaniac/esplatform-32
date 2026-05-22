@@ -1,6 +1,8 @@
 #pragma once
-
 #include <ArduinoJson.h>
+
+#include <map>
+#include <variant>
 
 #include "system.h"
 
@@ -66,9 +68,13 @@ struct Wifi {
     Station sta;
 };
 
+using ConfigValue = std::variant<bool, int32_t, float, double, size_t, std::string>;
+
 struct Config {
     Sys sys;
     Wifi wifi;
+
+    std::map<std::string, ConfigValue> customConfig;
 };
 
 void getDefaultConfig(Config*);

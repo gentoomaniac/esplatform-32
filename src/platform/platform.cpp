@@ -5,7 +5,6 @@
 #include <WiFi.h>
 #include <esp_http_server.h>
 
-#include "auth.h"
 #include "deviceconfig.h"
 #include "info.h"
 #include "metrics.h"
@@ -15,35 +14,22 @@
 static const int RESET_BUTTON_PRESS_SECONDS = 10;
 
 ESPlatform32 esPlatform32;
-static Config config;
 
-esp_err_t rpc_handler(httpd_req_t* req) {
-    return authed(req, &config, rpc_post_handler);
-}
-
-esp_err_t metrics_handler(httpd_req_t* req) {
-    return metrics_get_handler(req, &config);
-}
-
-esp_err_t info_handler(httpd_req_t* req) {
-    return info_get_handler(req, &config);
-}
-
-httpd_handle_t start_webserver(void) {
+httpd_handle_t start_webserver(Config* config) {
     httpd_handle_t server = NULL;
-    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.stack_size = 8192;
-    config.lru_purge_enable = true;
-    config.max_uri_handlers = 4;
+    httpd_config_t httpDefaultConfig = HTTPD_DEFAULT_CONFIG();
+    httpDefaultConfig.stack_size = 8192;
+    httpDefaultConfig.lru_purge_enable = true;
+    httpDefaultConfig.max_uri_handlers = 4;
 
-    httpd_uri_t info_uri = {.uri = "/info", .method = HTTP_GET, .handler = info_handler, .user_ctx = NULL};
+    httpd_uri_t info_uri = {.uri = "/info", .method = HTTP_GET, .handler = info_handler, .user_ctx = &config};
 
-    httpd_uri_t metrics_uri = {.uri = "/metrics", .method = HTTP_GET, .handler = metrics_handler, .user_ctx = NULL};
+    httpd_uri_t metrics_uri = {.uri = "/metrics", .method = HTTP_GET, .handler = metrics_handler, .user_ctx = &config};
 
-    httpd_uri_t rpc_uri = {.uri = "/rpc", .method = HTTP_POST, .handler = rpc_handler, .user_ctx = NULL};
+    httpd_uri_t rpc_uri = {.uri = "/rpc", .method = HTTP_POST, .handler = rpc_handler, .user_ctx = &config};
 
     Serial.println("Starting Native ESP-IDF HTTP Server...");
-    if (httpd_start(&server, &config) == ESP_OK) {
+    if (httpd_start(&server, &httpDefaultConfig) == ESP_OK) {
         httpd_register_uri_handler(server, &info_uri);
         httpd_register_uri_handler(server, &metrics_uri);
         httpd_register_uri_handler(server, &rpc_uri);
@@ -91,6 +77,10 @@ void waitForSystemReset(void* pvParameters) {
 
         delay(100);
     }
+}
+
+void ESPlatform32::setConfigValue(std::string key, ConfigValue value) {
+    config.customConfig[key] = value;
 }
 
 void ESPlatform32::taskWrapper(void* pvParameters) {
@@ -162,7 +152,7 @@ void ESPlatform32::begin(uint8_t led_pin, uint8_t button_pin) {
 
     if (WiFi.localIP() || WiFi.softAPIP()) {
         delay(100);
-        start_webserver();
+        start_webserver(&config);
     } else {
         while (true) {
             digitalWrite(led_pin, !digitalRead(led_pin));

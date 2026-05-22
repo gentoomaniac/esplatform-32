@@ -70,7 +70,9 @@ void esp32_uptime_seconds(httpd_req_t* req, Config* config) {
     httpd_resp_send_chunk(req, buffer, HTTPD_RESP_USE_STRLEN);
 }
 
-esp_err_t metrics_get_handler(httpd_req_t* req, Config* config) {
+esp_err_t metrics_handler(httpd_req_t* req) {
+    Config* config = (Config*)req->user_ctx;
+
     httpd_resp_set_type(req, "text/plain; version=0.0.4");
     esp32_temperature_c(req, config);
     esp32_clockspeed(req, config);
