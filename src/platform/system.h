@@ -6,7 +6,7 @@
 
 #define MAC_STR_LEN 13
 
-const char* getMac();
+void getMac(char*, size_t);
 void onboardLed(uint8_t);
 const char* getHardwareRevisionString();
 void generateRandomSecret(char*, size_t);

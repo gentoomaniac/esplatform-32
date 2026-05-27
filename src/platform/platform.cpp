@@ -22,11 +22,11 @@ httpd_handle_t start_webserver(Config* config) {
     httpDefaultConfig.lru_purge_enable = true;
     httpDefaultConfig.max_uri_handlers = 4;
 
-    httpd_uri_t info_uri = {.uri = "/info", .method = HTTP_GET, .handler = info_handler, .user_ctx = &config};
+    httpd_uri_t info_uri = {.uri = "/info", .method = HTTP_GET, .handler = info_handler, .user_ctx = config};
 
-    httpd_uri_t metrics_uri = {.uri = "/metrics", .method = HTTP_GET, .handler = metrics_handler, .user_ctx = &config};
+    httpd_uri_t metrics_uri = {.uri = "/metrics", .method = HTTP_GET, .handler = metrics_handler, .user_ctx = config};
 
-    httpd_uri_t rpc_uri = {.uri = "/rpc", .method = HTTP_POST, .handler = rpc_handler, .user_ctx = &config};
+    httpd_uri_t rpc_uri = {.uri = "/rpc", .method = HTTP_POST, .handler = rpc_handler, .user_ctx = config};
 
     Serial.println("Starting Native ESP-IDF HTTP Server...");
     if (httpd_start(&server, &httpDefaultConfig) == ESP_OK) {
@@ -99,8 +99,8 @@ void ESPlatform32::run() {
 }
 
 void ESPlatform32::begin(uint8_t led_pin, uint8_t button_pin) {
-    this->ledPin = ledPin;
-    this->buttonPin = buttonPin;
+    this->ledPin = led_pin;
+    this->buttonPin = button_pin;
 
     Serial.begin(115200);
     xTaskCreatePinnedToCore(waitForSystemReset, "ESPlatform32_reset_watchdog", 4096, (void*)(uintptr_t)this->buttonPin,

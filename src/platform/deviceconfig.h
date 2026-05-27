@@ -38,7 +38,7 @@ struct Internal {
 };
 
 struct Sys {
-    const char* id;
+    char id[MAX_FIELD_LENGTH];
     bool led;
     Auth auth;
     Debug debug;

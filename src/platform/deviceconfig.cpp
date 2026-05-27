@@ -4,6 +4,8 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 
+#include <map>
+
 #include "system.h"
 
 const char* FW_VERSION = "v0.0.0-alpha";
@@ -12,7 +14,7 @@ const char* CONFIG_FILE_PATH = "/config.json";
 void getDefaultConfig(Config* config) {
     static bool initialized = false;
 
-    config->sys.id = getMac();
+    getMac(config->sys.id, sizeof(config->sys.id));
     config->sys.led = true;
 
     config->sys.auth.enabled = true;
@@ -20,8 +22,8 @@ void getDefaultConfig(Config* config) {
     strncpy(config->sys.auth.password, config->sys.id, MAX_AUTH_PASSWORD_LEN);
 
     snprintf(config->sys.device.name, MAX_DEVICE_NAME_LENGTH, "ESP32-%s", config->sys.id);
-    strncpy(config->sys.device.mac, getMac(), MAC_STR_LEN);
-    strncpy(config->sys.device.fwVersion, FW_VERSION, MAX_DEVICE_VERSION_LEN);
+    getMac(config->sys.device.mac, sizeof(config->sys.device.mac));
+    strncpy(config->sys.device.fwVersion, FW_VERSION, strlen(FW_VERSION));
 
     config->sys.debug.serialEnabled = true;
     config->sys.debug.baud = 115200;
@@ -84,7 +86,7 @@ void deserializeDevice(Device& device, JsonObjectConst obj) {
 }
 
 void serializeSys(const Sys& sys, JsonObject obj) {
-    obj["id"] = sys.id;
+    // obj["id"] = sys.id;
     obj["led"] = sys.led;
 
     JsonObject authObj = obj["auth"].to<JsonObject>();
@@ -162,6 +164,36 @@ void deserializeWifi(Wifi& wifi, JsonObjectConst obj) {
     }
 }
 
+void serialiseCustomConfig(const std::map<std::string, ConfigValue>& customConfig, JsonObject obj) {
+    for (auto [key, value] : customConfig) {
+        std::visit([&](auto&& innerValue) { obj[key] = innerValue; }, value);
+    }
+}
+
+void deserialiseCustomConfig(std::map<std::string, ConfigValue>& customConfig, JsonObjectConst obj) {
+    for (auto kv : obj) {
+        std::string k = kv.key().c_str();
+
+        if (customConfig.count(k)) {
+            std::visit(
+                [&kv](auto&& targetValue) {
+                    using T = std::decay_t<decltype(targetValue)>;
+
+                    JsonVariantConst jsonVal = kv.value();
+                    Serial.println(kv.key().c_str());
+
+                    if (jsonVal.template is<T>()) {
+                        Serial.println("correct type");
+                        targetValue = jsonVal.template as<T>();
+                    } else {
+                        Serial.println("wrong type");
+                    }
+                },
+                customConfig[k]);
+        }
+    }
+}
+
 void serializeConfig(const Config& config, JsonObject obj) {
     JsonObject sysObj = obj["sys"].to<JsonObject>();
     serializeSys(config.sys, sysObj);
@@ -175,6 +207,9 @@ void deserializeConfig(Config& config, JsonObjectConst obj) {
     }
     if (obj["wifi"].is<JsonObjectConst>()) {
         deserializeWifi(config.wifi, obj["wifi"]);
+    }
+    if (obj["custom"].is<JsonObjectConst>()) {
+        deserialiseCustomConfig(config.customConfig, obj["custom"]);
     }
 }
 

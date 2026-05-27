@@ -4,28 +4,24 @@
 
 #include "esp_random.h"
 
-const char* getMac() {
-    static char macStr[MAC_STR_LEN];
-
+void getMac(char* macStr, size_t buffSize) {
     uint8_t mac[6];
     esp_efuse_mac_get_default(mac);  //
 
-    snprintf(macStr, sizeof(macStr), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
-    return macStr;
+    snprintf(macStr, buffSize, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
 unsigned long previousLedMillis = 0;
 const long ledInterval = 1000;
 bool ledState = false;
 
-void onboardLed(uint8_t led_builtin) {
+void onboardLed(uint8_t led_pin) {
     unsigned long currentMillis = millis();
 
     if (currentMillis - previousLedMillis >= ledInterval) {
         previousLedMillis = currentMillis;
         ledState = !ledState;
-        digitalWrite(led_builtin, ledState);
+        digitalWrite(led_pin, ledState);
     }
 }
 

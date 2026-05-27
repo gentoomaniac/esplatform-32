@@ -48,7 +48,9 @@ void serializeDeviceProfile(const DeviceProfile& dp, JsonObject obj) {
     obj["cores"] = dp.cores;
     obj["cpu_freq_mhz"] = dp.cpu_freq_mhz;
 
-    obj["mac"] = getMac();
+    char buffer[MAC_STR_LEN];
+    getMac(buffer, sizeof(buffer));
+    obj["mac"] = buffer;
     obj["memory_kb"] = dp.psram_size_kb;
     obj["flash_mb"] = dp.flash_size_mb;
     obj["flash_mode"] = dp.flash_mode;
