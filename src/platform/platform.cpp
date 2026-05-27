@@ -114,7 +114,7 @@ void ESPlatform32::begin(uint8_t led_pin, uint8_t button_pin) {
     }
 
     getDefaultConfig(&config);
-    // loadConfig(&config);
+    loadConfig(&config);
 
     if (config.sys.debug.serialEnabled) {
         Serial.begin(config.sys.debug.baud);
